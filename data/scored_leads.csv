@@ -1,0 +1,51 @@
+Company Name,Website,Country,Industry,website_exists,contact_form,contact_page_exists,services_count,country_score,industry_score,lead_quality_score,total_lead_score,Lead Score,Predicted Lead Class
+Nexus AI,www.nexusai.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+BrainCore AI,www.braincoreai.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+Quantum AI,www.quantumai.com,United Arab Emirates,AI Development,1,1,1,3,1,1,3,15,60,Medium
+DeepMind AI,www.deepmindai.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+CogniTech,www.cognitech.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+AI Innovators,www.aiinnovators.com,United Arab Emirates,AI Development,1,1,1,3,1,1,3,15,60,Medium
+NeuralTech,www.neuraltech.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+IntelliSys,www.intellisys.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+DataMind AI,www.datamindai.com,United Arab Emirates,AI Development,1,1,1,3,1,1,3,15,60,Medium
+Predictive AI,www.predictiveai.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+AI Dynamics,www.aidynamics.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+SmartLogic,www.smartlogic.com,United Arab Emirates,AI Development,1,1,1,3,1,1,3,15,60,Medium
+CogniCore,www.cognicore.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+AI Vanguard,www.aivanguard.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+DeepLearning AI,www.deeplearningai.com,United Arab Emirates,AI Development,1,1,1,3,1,1,3,15,60,Medium
+AI Frontiers,www.aifrontiers.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+NeuralForge,www.neuralforge.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+AI Catalyst,www.aicatalyst.com,United Arab Emirates,AI Development,1,1,1,3,1,1,3,15,60,Medium
+BrainWave AI,www.brainwaveai.com,United States,AI Development,1,1,1,3,3,1,3,17,70,High
+AI Infinitum,www.aiinfinitum.com,Canada,AI Development,1,1,1,3,2,1,3,16,65,Medium
+NeuralEdge,www.neuraledge.com,United Arab Emirates,AI Development,1,1,1,2,1,1,2,12,57,Medium
+AI Precision,www.aiprecision.com,United States,AI Development,1,1,1,2,3,1,2,14,67,Medium
+DeepSense AI,www.deepsenseai.com,Canada,AI Development,1,1,1,2,2,1,2,13,62,Medium
+AI Mavericks,www.aimavericks.com,United Arab Emirates,AI Development,1,1,1,2,1,1,2,12,57,Medium
+CognitiveScale,www.cognitivescale.com,United States,AI Development,1,1,1,2,3,1,2,14,67,Medium
+AI Republic,www.airepublic.com,Canada,AI Development,1,1,1,2,2,1,2,13,62,Medium
+NeuralVision,www.neuralvision.com,United Arab Emirates,AI Development,1,1,1,2,1,1,2,12,57,Medium
+AI Fortress,www.aifortress.com,United States,AI Development,1,1,1,2,3,1,2,14,67,Medium
+IntelliMatrix,www.intellimatrix.com,Canada,AI Development,1,1,1,2,2,1,2,13,62,Medium
+AI Ops,www.aiops.com,United Arab Emirates,AI Development,1,1,1,2,1,1,2,12,57,Medium
+DeepCognition,www.deepcognition.com,United States,AI Development,1,1,1,2,3,1,2,14,67,Medium
+AI Velocity,www.aivelocity.com,Canada,AI Development,1,1,1,2,2,1,2,13,62,Medium
+NeuralInsight,www.neuralinsight.com,United Arab Emirates,AI Development,1,1,1,2,1,1,2,12,57,Medium
+AI Synergy,www.aisynergy.com,United States,AI Development,1,1,1,2,3,1,2,14,67,Medium
+BrainTrust AI,www.braintrustai.com,Canada,AI Development,1,1,1,2,2,1,2,13,62,Medium
+AI Sovereign,www.aisovereign.com,United Arab Emirates,AI Development,1,0,1,1,1,1,1,7,31,Low
+CogniVerse,www.cogniverse.com,United States,AI Development,1,0,1,1,3,1,1,9,41,Medium
+AI Zenith,www.aizenith.com,Canada,AI Development,1,0,1,1,2,1,1,8,36,Low
+Nexa AI,www.nexaai.com,United Arab Emirates,AI Development,1,0,1,1,1,1,1,7,31,Low
+AI Matrix,www.aimatrix.com,United States,AI Development,1,0,1,1,3,1,1,9,41,Medium
+IntelliGen,www.intelligen.com,Canada,AI Development,1,0,1,1,2,1,1,8,36,Low
+AI Ascend,www.aiascend.com,United Arab Emirates,AI Development,1,0,1,1,1,1,1,7,31,Low
+NeuralCore,www.neuralcore.com,United States,AI Development,1,0,1,1,3,1,1,9,41,Medium
+AI Logic,www.ailogic.com,Canada,AI Development,1,0,1,1,2,1,1,8,36,Low
+DeepCore AI,www.deepcoreai.com,United Arab Emirates,AI Development,1,0,1,1,1,1,1,7,31,Low
+AI Bridge,www.aibridge.com,United States,AI Development,1,0,1,1,3,1,1,9,41,Medium
+CogniTech Labs,www.cognitechlabs.com,Canada,AI Development,1,0,1,1,2,1,1,8,36,Low
+AI Works,www.aiworks.com,United Arab Emirates,AI Development,1,0,1,1,1,1,1,7,31,Low
+Neural Labs,www.neurallabs.com,United States,AI Development,1,0,1,1,3,1,1,9,41,Medium
+AI Hub,www.aihub.com,Canada,AI Development,1,0,1,1,2,1,1,8,36,Low
