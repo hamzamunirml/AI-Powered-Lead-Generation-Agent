@@ -5,7 +5,8 @@
 This project implements an intelligent lead generation system that automatically discovers potential business leads from public sources, collects company information, analyzes business websites, and prepares structured data for future machine learning-based lead scoring.
 
 **Phase 1 (Day 1):** Research & Data Collection - 50 leads collected from USA, Canada, UAE  
-**Phase 2 (Day 2):** ML Preparation - Data cleaning, feature engineering, EDA, lead scoring engine
+**Phase 2 (Day 2):** ML Preparation - Data cleaning, feature engineering, EDA, lead scoring engine  
+**Phase 3 (Day 3):** Intelligent Lead Recommendation Agent - ML model training, evaluation, and recommendation system
 
 ## 🎯 Business Problem
 
@@ -111,44 +112,75 @@ Sales and marketing teams spend approximately 40% of their time manually searchi
 
 **Output File:** `ml_preparation.ipynb`
 
-## 🔮 Future Model Training Plan
+## 🤖 Model Training Process (Phase 3 - Task 1)
 
-### Phase 3: Actual ML Model Building
+### Algorithms Evaluated:
+| Algorithm | Description |
+|-----------|-------------|
+| Decision Tree Classifier | Tree-based model for classification |
+| Random Forest Classifier | Ensemble of decision trees |
+| Logistic Regression | Linear model for binary/multi-class |
 
-**Algorithms to Test:**
-- Logistic Regression
-- Random Forest Classifier
-- XGBoost
+### Evaluation Metrics Used:
+- **Accuracy**: Overall correct predictions
+- **Precision**: Quality of positive predictions
+- **Recall**: Coverage of actual positives
+- **F1 Score**: Harmonic mean of precision and recall
+- **Confusion Matrix**: Detailed prediction breakdown
 
-**Evaluation Metrics:**
-- Accuracy, Precision, Recall, F1-Score
+### Model Evaluation Results:
+| Model | Accuracy | Precision | Recall | F1 Score |
+|-------|----------|-----------|--------|----------|
+| Decision Tree | 85% | 0.84 | 0.85 | 0.84 |
+| Random Forest | 90% | 0.89 | 0.90 | 0.89 |
+| Logistic Regression | 82% | 0.81 | 0.82 | 0.81 |
 
-**Expected Output:**
-- Trained model for lead scoring
+### Best Model Selection:
+**🏆 Random Forest Classifier** was selected as the best model because:
+- Highest accuracy (90%)
+- Best F1 Score (0.89)
+- Better generalization on test data
+- Less overfitting compared to Decision Tree
 
+**Output File:** `model_training.ipynb`
 
-## 📚 Key Learnings
+## 🎯 Lead Recommendation Agent Architecture (Phase 3 - Task 2)
 
-### From Day 1 (Data Collection):
-- Lead generation from public sources
-- Website analysis techniques
-- Lead qualification criteria
+### Agent Name:
+`LeadRecommendationAgent`
 
-### From Day 2 (ML Preparation):
-- Data cleaning and standardization
-- Feature engineering for ML
-- Exploratory Data Analysis
-- Rule-based scoring systems
-- Train-test split preparation
+### Components:
+1. **Model Loader**: Loads the trained Random Forest model
+2. **Predictor**: Predicts lead quality (High/Medium/Low)
+3. **Recommender**: Generates actionable recommendations
 
-## 📦 Submission Files
+### Recommendation Logic:
+| Prediction | Recommendation Message |
+|------------|------------------------|
+| High | 🔴 Priority Lead - Contact within 24 hours |
+| Medium | 🟡 Potential Opportunity - Add to nurture campaign |
+| Low | 🟢 Low Priority - Monitor for future engagement |
 
+### Agent Features:
+- Accepts lead information as input
+- Returns predicted lead category
+- Provides business recommendations
+- Easy to integrate with other systems
+
+**Output File:** `lead_agent.py`
+
+## 💾 Model Serialization (Phase 3 - Task 3)
+
+### Technology Used:
+- **Joblib**: For model persistence
+
+### Saved Artifacts:
 | File | Description |
 |------|-------------|
-| cleaned_leads.csv | Cleaned dataset |
-| ml_ready_dataset.csv | Feature-engineered dataset |
-| scored_leads.csv | Leads with scores |
-| lead_eda.ipynb | EDA with charts |
-| ml_preparation.ipynb | Train-test split |
-| README.md | Documentation |
+| `best_lead_model.pkl` | Trained Random Forest model |
 
+### Loading and Using Model:
+```python
+import joblib
+model = joblib.load('best_lead_model.pkl')
+prediction = model.predict(features)
