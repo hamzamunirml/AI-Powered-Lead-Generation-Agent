@@ -7,10 +7,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime
 import numpy as np
-import base64
 from streamlit_option_menu import option_menu
 
 # ==================== PAGE CONFIGURATION ====================
@@ -21,16 +19,18 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ==================== CUSTOM CSS FOR PROFESSIONAL LOOK ====================
+# ==================== CUSTOM CSS ====================
 st.markdown(
     """
 <style>
-    /* Main container styling */
-    .main {
-        background-color: #f8f9fa;
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 30px;
+        text-align: center;
     }
-
-    /* Card styling */
     .card {
         background-color: white;
         border-radius: 15px;
@@ -38,17 +38,6 @@ st.markdown(
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         margin-bottom: 20px;
     }
-
-    /* Header styling */
-    .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        border-radius: 15px;
-        color: white;
-        margin-bottom: 30px;
-    }
-
-    /* Metric card styling */
     .metric-card {
         background: white;
         border-radius: 10px;
@@ -57,63 +46,51 @@ st.markdown(
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         border-top: 4px solid #667eea;
     }
-
-    /* Prediction badges */
-    .badge-high {
-        background-color: #dc3545;
+    .result-high {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 15px;
+        padding: 25px;
         color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
-        display: inline-block;
+        text-align: center;
     }
-
-    .badge-medium {
-        background-color: #ffc107;
+    .result-medium {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        border-radius: 15px;
+        padding: 25px;
         color: #333;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
-        display: inline-block;
+        text-align: center;
     }
-
-    .badge-low {
-        background-color: #28a745;
+    .result-low {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        border-radius: 15px;
+        padding: 25px;
         color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
-        display: inline-block;
+        text-align: center;
     }
-
-    /* Button styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 25px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-    }
-
-    /* Sidebar styling */
-    .css-1d391kg {
-        background-color: #2c3e50;
-    }
-
-    /* Footer */
     .footer {
         text-align: center;
         padding: 20px;
         color: #6c757d;
         border-top: 1px solid #dee2e6;
         margin-top: 40px;
+    }
+
+    /* Purple Button Styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 30px;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
     }
 </style>
 """,
@@ -124,48 +101,134 @@ st.markdown(
 # ==================== LOAD MODEL ====================
 @st.cache_resource
 def load_model():
-    try:
-        model = joblib.load("notebooks/saved_models/best_lead_model.pkl")
-        return model
-    except:
+    """Load the trained model from various possible paths"""
+    paths_to_try = [
+        "notebooks/saved_models/best_lead_model.pkl",
+        "../notebooks/saved_models/best_lead_model.pkl",
+        "best_lead_model.pkl",
+        "models/best_lead_model.pkl",
+    ]
+    for path in paths_to_try:
         try:
-            model = joblib.load("../notebooks/saved_models/best_lead_model.pkl")
+            model = joblib.load(path)
             return model
         except:
-            return None
+            continue
+    return None
 
 
-# ==================== RECOMMENDATIONS ====================
-RECOMMENDATIONS = {
-    "High": {
-        "message": "🔴 Priority Lead - Contact within 24 hours",
-        "icon": "🚨",
-        "color": "#dc3545",
-        "action": "Immediate call/email required",
-        "priority": 1,
-    },
-    "Medium": {
-        "message": "🟡 Potential Opportunity - Add to nurture campaign",
-        "icon": "📋",
-        "color": "#ffc107",
-        "action": "Schedule follow-up within week",
-        "priority": 2,
-    },
-    "Low": {
-        "message": "🟢 Low Priority - Monitor for future engagement",
-        "icon": "📊",
-        "color": "#28a745",
-        "action": "Add to newsletter list",
-        "priority": 3,
-    },
-}
+# ==================== SCORE CALCULATION ====================
+def calculate_score(website_exists, contact_form, services_count, country_score):
+    """Calculate lead score based on features"""
+    score = 0
+    if website_exists == 1:
+        score += 10
+    if contact_form == 1:
+        score += 20
+    if country_score == 3:
+        score += 15
+    elif country_score == 2:
+        score += 10
+    elif country_score == 1:
+        score += 5
+    if services_count > 3:
+        score += 15
+    return score
+
+
+def get_priority_from_score(score):
+    """Get priority based on score only"""
+    if score >= 60:
+        return "High"
+    elif score >= 35:
+        return "Medium"
+    else:
+        return "Low"
+
+
+def get_recommendation(priority, score):
+    """Get recommendation based on priority"""
+    if priority == "High":
+        return {
+            "label": "HIGH PRIORITY LEAD",
+            "message": "Priority Lead - Contact within 24 hours",
+            "full_message": "This is a HIGH priority lead. Contact immediately within 24 hours.",
+            "icon": "🔴",
+            "action": "Immediate call/email required",
+            "instruction": "Send to sales team for immediate follow-up",
+        }
+    elif priority == "Medium":
+        return {
+            "label": "MEDIUM PRIORITY LEAD",
+            "message": "Potential Opportunity - Add to nurture campaign",
+            "full_message": "This is a MEDIUM priority lead. Add to nurture campaign for follow-up.",
+            "icon": "🟡",
+            "action": "Send nurturing email sequence",
+            "instruction": "Add to marketing nurture campaign",
+        }
+    else:
+        return {
+            "label": "LOW PRIORITY LEAD",
+            "message": "Low Priority - Monitor for future engagement",
+            "full_message": "This is a LOW priority lead. Monitor for future engagement.",
+            "icon": "🟢",
+            "action": "Add to newsletter list",
+            "instruction": "Track engagement metrics only",
+        }
+
+
+def display_result_card(priority, rec, score):
+    """Display result card based on priority"""
+    if priority == "High":
+        st.markdown(
+            f"""
+        <div class="result-high">
+            <h1>{rec['icon']} {rec['label']}</h1>
+            <p style="font-size: 18px; margin: 15px 0;">⚠️ {rec['full_message']}</p>
+            <hr style="background: white; margin: 15px 0;">
+            <p><strong>⭐ Recommended Action:</strong> {rec['action']}</p>
+            <p><strong>📈 Lead Score:</strong> {score} points (Required: 60+ points)</p>
+            <p><strong>📝 Instruction:</strong> {rec['instruction']}</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+    elif priority == "Medium":
+        st.markdown(
+            f"""
+        <div class="result-medium">
+            <h1>{rec['icon']} {rec['label']}</h1>
+            <p style="font-size: 18px; margin: 15px 0;">📋 {rec['full_message']}</p>
+            <hr style="background: #333; margin: 15px 0;">
+            <p><strong>⭐ Recommended Action:</strong> {rec['action']}</p>
+            <p><strong>📈 Lead Score:</strong> {score} points (Required: 35-59 points)</p>
+            <p><strong>📝 Instruction:</strong> {rec['instruction']}</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            f"""
+        <div class="result-low">
+            <h1>{rec['icon']} {rec['label']}</h1>
+            <p style="font-size: 18px; margin: 15px 0;">📊 {rec['full_message']}</p>
+            <hr style="background: white; margin: 15px 0;">
+            <p><strong>⭐ Recommended Action:</strong> {rec['action']}</p>
+            <p><strong>📈 Lead Score:</strong> {score} points (Required: Less than 35 points)</p>
+            <p><strong>📝 Instruction:</strong> {rec['instruction']}</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+
 
 # ==================== MAIN HEADER ====================
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown(
         """
-    <div class="main-header" style="text-align: center;">
+    <div class="main-header">
         <h1>🎯 LeadScout AI</h1>
         <p style="font-size: 18px;">Intelligent Lead Recommendation System</p>
         <p style="font-size: 14px; opacity: 0.9;">AI-Powered | Real-Time Predictions | Actionable Insights</p>
@@ -205,26 +268,28 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 📊 System Status")
 
-    model_status = "✅ Active" if load_model() else "❌ Inactive"
-    st.markdown(f"**Model:** {model_status}")
+    model = load_model()
+    if model:
+        st.success("✅ Model: Active")
+    else:
+        st.warning("⚠️ Model: Using Rule-Based Scoring")
+
     st.markdown(f"**Version:** v2.0.0")
     st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d')}")
 
     st.markdown("---")
-    st.markdown("### 🎯 Lead Scoring Criteria")
+    st.markdown("### 🎯 Lead Priority Criteria")
     st.info("""
-    **High Priority (60+ points)**
+    🔴 **HIGH Priority (60+ points)**
     - Contact within 24 hours
-    - Direct sales outreach
 
-    **Medium Priority (35-59 points)**
+    🟡 **MEDIUM Priority (35-59 points)**
     - Nurture campaign
-    - Weekly follow-up
 
-    **Low Priority (<35 points)**
+    🟢 **LOW Priority (<35 points)**
     - Monitor engagement
-    - Newsletter subscription
     """)
+
 
 # ==================== SINGLE PREDICTION TAB ====================
 if selected == "Single Prediction":
@@ -241,7 +306,6 @@ if selected == "Single Prediction":
             format_func=lambda x: (
                 "✅ Yes, Website Available" if x == 1 else "❌ No Website"
             ),
-            help="Does the company have a professional website?",
         )
 
         contact_form = st.selectbox(
@@ -250,7 +314,6 @@ if selected == "Single Prediction":
             format_func=lambda x: (
                 "✅ Yes, Contact Form Available" if x == 1 else "❌ No Contact Form"
             ),
-            help="Is there a contact form on the website?",
         )
 
         services_count = st.slider(
@@ -258,13 +321,10 @@ if selected == "Single Prediction":
             min_value=0,
             max_value=10,
             value=3,
-            help="How many services does the company offer?",
         )
 
     with col2:
         st.markdown("#### 📈 Company Profile")
-
-        # Country selection (country_score)
         country_score = st.selectbox(
             "Target Country",
             options=[3, 2, 1],
@@ -273,75 +333,47 @@ if selected == "Single Prediction":
                 if x == 3
                 else "🇨🇦 Canada (Score: 2)" if x == 2 else "🇦🇪 UAE (Score: 1)"
             ),
-            help="Geographic market priority score",
         )
 
     st.markdown("---")
 
-    # Calculate Score Preview (with 4 features only)
-    score_preview = 0
-    score_preview += 10 if website_exists == 1 else 0
-    score_preview += 20 if contact_form == 1 else 0
-    score_preview += 15 if country_score == 3 else (10 if country_score == 2 else 5)
-    score_preview += 15 if services_count > 3 else 0
-
+    # Only button - NO score preview
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🔮 Generate Prediction", use_container_width=True):
-            model = load_model()
-            if model:
-                # Use ONLY 4 features (without about_word_count)
-                features = [
-                    [
-                        website_exists,
-                        contact_form,
-                        services_count,
-                        country_score,
-                    ]
-                ]
-                prediction = model.predict(features)[0]
-                rec = RECOMMENDATIONS.get(prediction, {})
+            # Calculate score and priority
+            score = calculate_score(
+                website_exists, contact_form, services_count, country_score
+            )
+            priority = get_priority_from_score(score)
 
-                # Results Card
-                st.markdown(
-                    f"""
-                <div class="card" style="text-align: center;">
-                    <h2>{rec.get('icon', '')} Lead Quality: {prediction}</h2>
-                    <div style="background-color: {rec.get('color', '#ccc')}; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                        <p style="font-size: 18px; margin: 0; color: {'#333' if prediction == 'Medium' else 'white'}">
-                            <strong>{rec.get('message', '')}</strong>
-                        </p>
-                    </div>
-                    <p><strong>Recommended Action:</strong> {rec.get('action', '')}</p>
-                    <p><strong>Score Preview:</strong> {score_preview} points</p>
-                </div>
-                """,
-                    unsafe_allow_html=True,
-                )
+            # Get recommendation based on priority
+            rec = get_recommendation(priority, score)
 
-                # Save to history
-                if "history" not in st.session_state:
-                    st.session_state.history = []
-                st.session_state.history.append(
-                    {
-                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "website_exists": website_exists,
-                        "contact_form": contact_form,
-                        "services_count": services_count,
-                        "country_score": country_score,
-                        "prediction": prediction,
-                        "score": score_preview,
-                    }
-                )
+            # Display result
+            display_result_card(priority, rec, score)
 
-                st.balloons()
-            else:
-                st.error("❌ Model not loaded! Please check model file.")
+            # Save to history
+            if "history" not in st.session_state:
+                st.session_state.history = []
+            st.session_state.history.append(
+                {
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "website_exists": website_exists,
+                    "contact_form": contact_form,
+                    "services_count": services_count,
+                    "country_score": country_score,
+                    "priority": priority,
+                    "score": score,
+                }
+            )
+
+            st.balloons()
+
 
 # ==================== BATCH PROCESSING TAB ====================
 elif selected == "Batch Processing":
     st.markdown("### 📁 Batch Lead Processing")
-    st.markdown("Upload a CSV file with multiple leads to generate predictions in bulk")
 
     st.info("""
     **Required CSV Columns:**
@@ -349,8 +381,6 @@ elif selected == "Batch Processing":
     - contact_form (0 or 1)
     - services_count (integer)
     - country_score (1, 2, or 3)
-
-    Optional: Company Name (for better readability)
     """)
 
     uploaded_file = st.file_uploader("Choose CSV file", type=["csv", "xlsx"])
@@ -365,7 +395,6 @@ elif selected == "Batch Processing":
             st.markdown("#### 📋 Input Data Preview")
             st.dataframe(df.head(10), use_container_width=True)
 
-            # Required columns (4 features only)
             required_cols = [
                 "website_exists",
                 "contact_form",
@@ -374,168 +403,101 @@ elif selected == "Batch Processing":
             ]
 
             if st.button("🚀 Process Batch", use_container_width=True):
-                model = load_model()
-                if model:
-                    X = df[required_cols]
-                    predictions = model.predict(X)
+                # Calculate scores and priorities
+                scores = []
+                priorities = []
+                recommendations = []
 
-                    df["Prediction"] = predictions
-                    df["Recommendation"] = df["Prediction"].apply(
-                        lambda x: RECOMMENDATIONS.get(x, {}).get("message", "")
+                for idx, row in df.iterrows():
+                    score = calculate_score(
+                        row["website_exists"],
+                        row["contact_form"],
+                        row["services_count"],
+                        row["country_score"],
                     )
-                    df["Priority Score"] = df.apply(
-                        lambda row: (
-                            10
-                            if row["website_exists"] == 1
-                            else (
-                                0 + 20
-                                if row["contact_form"] == 1
-                                else (
-                                    0
-                                    + (
-                                        15
-                                        if row["country_score"] == 3
-                                        else 10 if row["country_score"] == 2 else 5
-                                    )
-                                    + 15
-                                    if row["services_count"] > 3
-                                    else 0
-                                )
-                            )
-                        ),
-                        axis=1,
-                    )
+                    priority = get_priority_from_score(score)
+                    rec = get_recommendation(priority, score)
 
-                    st.success(f"✅ Processed {len(df)} leads successfully!")
+                    scores.append(score)
+                    priorities.append(priority)
+                    recommendations.append(rec["message"])
 
-                    st.markdown("#### 📊 Results Preview")
-                    st.dataframe(
-                        (
-                            df[
-                                [
-                                    "Company Name",
-                                    "Prediction",
-                                    "Recommendation",
-                                    "Priority Score",
-                                ]
-                            ].head(10)
-                            if "Company Name" in df.columns
-                            else df[
-                                ["Prediction", "Recommendation", "Priority Score"]
-                            ].head(10)
-                        ),
-                        use_container_width=True,
-                    )
+                df["Score"] = scores
+                df["Priority"] = priorities
+                df["Recommendation"] = recommendations
 
-                    # Download button
-                    csv = df.to_csv(index=False)
-                    st.download_button(
-                        label="📥 Download Predictions (CSV)",
-                        data=csv,
-                        file_name=f"lead_predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv",
-                    )
+                st.success(f"✅ Processed {len(df)} leads successfully!")
 
-                    # Distribution chart
-                    st.markdown("#### 📈 Prediction Distribution")
-                    fig = px.pie(
-                        df,
-                        names="Prediction",
-                        title="Lead Quality Distribution",
-                        color="Prediction",
-                        color_discrete_map={
-                            "High": "#dc3545",
-                            "Medium": "#ffc107",
-                            "Low": "#28a745",
-                        },
-                        hole=0.4,
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
+                st.markdown("#### 📊 Results Preview")
+                display_cols = ["Priority", "Recommendation", "Score"]
+                if "Company Name" in df.columns:
+                    display_cols = ["Company Name"] + display_cols
+                st.dataframe(df[display_cols].head(10), use_container_width=True)
 
-                else:
-                    st.error("❌ Model not loaded!")
+                # Download button
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Predictions (CSV)",
+                    data=csv,
+                    file_name=f"lead_predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                )
+
+                # Distribution chart
+                st.markdown("#### 📈 Priority Distribution")
+                priority_counts = df["Priority"].value_counts()
+                fig = px.pie(
+                    values=priority_counts.values,
+                    names=priority_counts.index,
+                    title="Lead Priority Distribution",
+                    color=priority_counts.index,
+                    color_discrete_map={
+                        "High": "#dc3545",
+                        "Medium": "#ffc107",
+                        "Low": "#28a745",
+                    },
+                    hole=0.4,
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
         except Exception as e:
             st.error(f"Error reading file: {e}")
+
 
 # ==================== ANALYTICS DASHBOARD TAB ====================
 elif selected == "Analytics Dashboard":
     st.markdown("### 📈 Analytics Dashboard")
 
-    # Load historical data if available
     if "history" in st.session_state and st.session_state.history:
         history_df = pd.DataFrame(st.session_state.history)
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
 
         with col1:
-            st.markdown(
-                """
-            <div class="metric-card">
-                <h3>📊 Total</h3>
-                <h2>{}</h2>
-                <p>Predictions Made</p>
-            </div>
-            """.format(len(history_df)),
-                unsafe_allow_html=True,
-            )
-
+            high_count = len(history_df[history_df["priority"] == "High"])
+            st.metric("🔴 High Priority Leads", high_count)
         with col2:
-            high_count = len(history_df[history_df["prediction"] == "High"])
-            st.markdown(
-                """
-            <div class="metric-card">
-                <h3>🔴 High</h3>
-                <h2>{}</h2>
-                <p>Priority Leads</p>
-            </div>
-            """.format(high_count),
-                unsafe_allow_html=True,
-            )
-
+            medium_count = len(history_df[history_df["priority"] == "Medium"])
+            st.metric("🟡 Medium Priority Leads", medium_count)
         with col3:
-            medium_count = len(history_df[history_df["prediction"] == "Medium"])
-            st.markdown(
-                """
-            <div class="metric-card">
-                <h3>🟡 Medium</h3>
-                <h2>{}</h2>
-                <p>Opportunities</p>
-            </div>
-            """.format(medium_count),
-                unsafe_allow_html=True,
-            )
+            low_count = len(history_df[history_df["priority"] == "Low"])
+            st.metric("🟢 Low Priority Leads", low_count)
 
-        with col4:
-            low_count = len(history_df[history_df["prediction"] == "Low"])
-            st.markdown(
-                """
-            <div class="metric-card">
-                <h3>🟢 Low</h3>
-                <h2>{}</h2>
-                <p>Monitor Leads</p>
-            </div>
-            """.format(low_count),
-                unsafe_allow_html=True,
-            )
-
-        # Charts
         col1, col2 = st.columns(2)
-
         with col1:
-            fig1 = px.bar(
-                history_df["prediction"].value_counts().reset_index(),
-                x="prediction",
+            fig = px.bar(
+                history_df["priority"].value_counts().reset_index(),
+                x="priority",
                 y="count",
                 title="Prediction Distribution",
-                color="prediction",
+                color="priority",
                 color_discrete_map={
                     "High": "#dc3545",
                     "Medium": "#ffc107",
                     "Low": "#28a745",
                 },
             )
-            st.plotly_chart(fig1, use_container_width=True)
-
+            st.plotly_chart(fig, use_container_width=True)
         with col2:
             fig2 = px.line(
                 history_df,
@@ -553,23 +515,12 @@ elif selected == "Analytics Dashboard":
             st.session_state.history = []
             st.rerun()
     else:
-        st.info(
-            "No prediction history yet. Make some predictions in the Single Prediction tab!"
-        )
+        st.info("No prediction history yet. Make some predictions!")
+
 
 # ==================== MODEL INSIGHTS TAB ====================
 elif selected == "Model Insights":
-    st.markdown("### 🧠 Model Insights & Explainability")
-
-    st.markdown(
-        """
-    <div class="card">
-        <h4>🎯 Feature Importance Analysis</h4>
-        <p>Understanding which factors most influence lead scoring decisions:</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("### 🧠 Model Insights & Scoring Rules")
 
     col1, col2 = st.columns(2)
 
@@ -647,6 +598,7 @@ elif selected == "Model Insights":
             unsafe_allow_html=True,
         )
 
+
 # ==================== API DOCUMENTATION TAB ====================
 elif selected == "API Documentation":
     st.markdown("### 🔌 API Documentation")
@@ -664,19 +616,7 @@ elif selected == "API Documentation":
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("#### 🏠 GET /")
-        st.code("""
-Response:
-{
-    "message": "Lead Recommendation API is running!",
-    "endpoints": {
-        "GET /health": "Check API status",
-        "POST /predict": "Predict lead quality"
-    }
-}
-        """)
-
-        st.markdown("#### 💚 GET /health")
+        st.markdown("#### 🏠 GET /health")
         st.code("""
 Response:
 {
@@ -688,7 +628,7 @@ Response:
     with col2:
         st.markdown("#### 🎯 POST /predict")
         st.code("""
-Request Body (4 features):
+Request Body:
 {
     "website_exists": 1,
     "contact_form": 1,
@@ -700,7 +640,7 @@ Response:
 {
     "prediction": "High",
     "recommendation": "Priority Lead - Contact within 24 hours",
-    "timestamp": "2024-01-15T10:30:00"
+    "timestamp": "2024-06-15T10:30:00"
 }
         """)
 
@@ -720,12 +660,13 @@ response = requests.post(url, json=data)
 print(response.json())
     """)
 
+
 # ==================== FOOTER ====================
 st.markdown(
     """
 <div class="footer">
-    <p>🤖 AI-Powered Lead Recommendation System | Built with Streamlit & FastAPI</p>
-    <p style="font-size: 12px;">© 2024 LeadScout AI | Machine Learning Internship Project</p>
+    <p>🤖 AI-Powered Lead Recommendation System | Built with Streamlit</p>
+    <p style="font-size: 12px;">© 2025 LeadScout AI | Machine Learning Internship Project</p>
 </div>
 """,
     unsafe_allow_html=True,
